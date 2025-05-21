@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>BASI DELLA GENERAZIONE DEI NUMERI "CASUALI"</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
+  <style>
+    body {
+      font-family: 'Arial Black', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      color: #fff;
+      background-color: #1e1e1e;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    @font-face {
+      font-family: 'VCR Mono';
+      src: url('vcrmono.ttf') format('truetype');
+    }
+
+    h1#animated-title {
+      font-family: 'VCR Mono', monospace;
+      font-weight: normal;
+      font-size: 6vw; /* Dimensione del font ridotta */
+      margin: 0;
+      padding: 20px;
+      width: 50vw; /* Larghezza del riquadro ridotta */
+      line-height: 0.8; /* Interlinea leggermente aumentata per leggibilità con font più piccolo */
+      text-align: left;
+      white-space: normal;
+      word-break: keep-all;
+      pointer-events: none;
+      user-select: none;
+      background: transparent;
+      box-sizing: border-box;
+      color: #e6e6e6;
+      display: flex;
+      align-items: flex-start;
+    }
+    .sections-wrapper {
+      width: 60vw;
+      max-width: 60vw;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: flex-end;
+      gap: 15px;
+      pointer-events: auto;
+      box-sizing: border-box;
+      padding-left: 20px;
+      padding-right: 0;
+      padding-top: 20px;
+      height: 100vh;
+      user-select: none;
+    }
+
+    .section {
+      background: none;
+      padding: 10px 30px;
+      cursor: pointer;
+      box-sizing: border-box;
+      white-space: nowrap;
+      border: 2px solid transparent;
+      transition: all 0.5s ease;
+      user-select: none;
+      width: auto;
+    }
+
+    .section h2 {
+      margin: 0;
+      font-size: 1.2vw;
+      transition: font-size 0.3s ease;
+      font-family: 'VCR Mono', monospace; /* Modifica qui */
+      color: #fff;
+      user-select: none;
+    }
+
+    .section.active h2 {
+      font-size: 2.0vw;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .tenda {
+      position: fixed;
+      width: 65vw;
+      height: 100vh;
+      top: 0;
+      left: 0;
+      transform: translateX(-100%);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      z-index: 900;
+      border-radius: 0;
+      user-select: none;
+      background-color: #1e1e1e;
+      padding: 40px 30px 30px 30px;
+      overflow-y: auto;
+      font-family: Arial, sans-serif;
+      color: #fff;
+      font-size: 1.5vw;
+      line-height: 1.4;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    .tenda.open {
+      transform: translateX(0%);
+      opacity: 0.98;
+      pointer-events: auto;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 2.5vw;
+      color: #eee;
+      cursor: pointer;
+      user-select: none;
+      font-weight: bold;
+      transition: color 0.3s ease;
+      z-index: 1000;
+      line-height: 1;
+    }
+
+    .close-btn:hover {
+      color: #ffffff;
+    }
+
+    .argument-content {
+      color: #ddd;
+    }
+
+    .argument-content strong,
+    .argument-content h3 {
+      color: #fff;
+    }
+    
+    .argument-content a {
+      color: #fff; /* Rende il testo del link bianco */
+      text-decoration: none; /* Rimuove la sottolineatura predefinita */
+      transition: color 0.3s ease; /* Aggiunge una transizione per l'hover */
+      font-size: 0.9vw; /* Rendi i link leggermente più piccoli, ad esempio 1vw */
+      /* O potresti usare un valore relativo come: font-size: 0.9em; */
+    }
+
+
+    .argument-content a:hover {
+      color: #f92672; /* Colore al passaggio del mouse (hover), ad esempio il tuo colore di evidenziazione */
+      text-decoration: underline; /* Aggiunge la sottolineatura solo al passaggio del mouse */
+    }
+
+    /* Stili per gli slider LCG, copiati dal tuo file index copia 2.html */
+    .slider-group { margin-bottom: 15px; display: flex; align-items: center; justify-content: center; width: 100%; }
+    .slider-group label { display: inline-block; width: 150px; text-align: right; margin-right: 10px; color: #fff;}
+    .slider-group input[type=range] { flex-grow: 1; max-width: 300px; }
+    .slider-group span { width: 40px; text-align: left; margin-left: 10px; color: #fff;}
+    
+  </style>
+</head>
+<body>
+  <h1 id="animated-title">BASI DELLA GENERAZIONE DEI NUMERI CASUALE</h1>
+
+  <div class="sections-wrapper">
+    <div class="section" data-index="0"><h2>INTRODUZIONE 1</h2></div>
+    <div class="section" data-index="1"><h2>PRNG E TRNG 2</h2></div>
+    <div class="section" data-index="2"><h2>ALGORITMI GENERATIVI 3</h2></div>
+    <div class="section" data-index="3"><h2>MARSENNE TWISTER 4</h2></div>
+    <div class="section" data-index="4"><h2>CASUALE O PSEUDO-CASUALE? 5</h2></div>
+    <div class="section" data-index="5"><h2>CRITTOGRAFIA E SICUREZZA 6</h2></div>
+    <div class="section" data-index="6"><h2>SITOGRAFIA E COLOPHON 7</h2></div>
+  </div>
+
+   <div class="tenda">
+    <div class="close-btn" title="Chiudi tenda">×</div>
+  </div>
+
+  <script>
+    const sections = document.querySelectorAll(".section");
+    const tenda = document.querySelector(".tenda");
+    const closeBtn = document.querySelector(".close-btn");
+    let highlightIndex = -1;
+    let isTendaOpen = false;
+    let myP5Sketch = null;
+    let myMersenneTwisterSketch = null;
+    let myLCGP5Sketch = null; // NUOVA VARIABILE PER LO SKETCH P5.JS LCG
+
+    const colors = [
+      '#61dafb', '#f92672', '#f8c555', '#c678dd',
+      '#98c379', '#e06c75', '#56b6c2', '#d19a66'
+    ];
+
+    const contents = [
+      `<div class="argument-content">
+        <h3><strong>1- Introduzione</strong></h3>
+        <p>La generazione dei numeri casuali è il processo attraverso cui si producono sequenze numeriche non prevedibili, cioè senza uno schema apparente. Questi numeri sono fondamentali in tantissimi campi: dalla critto­grafia ai videogiochi, dalla simulazione scientifica all’intelligenza artificiale. La generazione di numeri casuali ha radici antiche, inizialmente basata su metodi fisici come il lancio di dadi o monete. Con l’avvento dei calcolatori negli anni ’40, si svilupparono algoritmi per produrre numeri pseudo-casuali, cioè sequenze deterministiche che imitano il comportamento casuale.<br>
+           Nascono così i PRNG (Pseudo-Random Number Generators), seguiti dai TRNG (True Random Number Generators), basati su fenomeni fisici.</p>
+        </div>`,
+
+      `<div class="argument-content">
+        <h3><strong>2- Tipologie di generatori di numeri casuali.</strong></h3>
+        <p>Esistono due principali categorie di generatori di numeri casuali utilizzati in informatica:</p>
+        <p>- Generatori di Numeri Pseudo-Casuali (PRNG): Questi generatori utilizzano algoritmi deterministici per produrre sequenze di numeri che appaiono casuali. Sono ampiamente utilizzati per la loro velocità e riproducibilità. Tuttavia, poiché sono deterministici, non sono adatti per applicazioni crittografiche senza ulteriori misure di sicurezza.<br>
+        - Generatori di Numeri veramente Casuali (TRNG): Questi generatori si basano su fenomeni fisici imprevedibili, come il rumore termico o il decadimento radioattivo, per produrre numeri casuali. Sono utilizzati in applicazioni dove la sicurezza è critica, come nella generazione di chiavi crittografiche.</p>
+        <div id="p5-sketch-container" style="width: 80%; max-width: 600px; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 30px auto;"></div>
+      </div>`,
+
+      `<div class="argument-content">
+        <h3><strong>3- Algoritmi di generazione casuale</strong></h3>
+        <p>Diversi algoritmi sono stati sviluppati per generare numeri pseudo-casuali:
+        <p> - Algoritmo di Von Neumann:</strong> Uno dei primi metodi per generare numeri pseudo-casuali, basato sull'estrazione delle cifre centrali del quadrato di un numero.<br>
+         - Generatori Lineari Congruenziali (LCG):</strong> Utilizzano una formula ricorsiva per generare una sequenza di numeri. La scelta dei parametri è cruciale per garantire una buona distribuzione e un lungo periodo.<br>
+         - Algoritmi di Fibonacci:</strong> Basati sulla sequenza di Fibonacci, questi algoritmi combinano numeri precedenti della sequenza per generare nuovi valori.<br>
+         - Algoritmo di Marsaglia:</strong> Conosciuto anche come "Mersenne Twister", è uno dei PRNG più utilizzati per la sua lunga periodicità e buona distribuzione statistica.</p>
+        
+      </div>`,
+
+      `<div class="argument-content">
+        <h3><strong>4- Marsenne Twister</strong></h3>
+        <p>Mersenne Twister è un algoritmo per la generazione di numeri pseudocasuali sviluppato nel 1997 da Makoto Matsumoto (松本 眞) e Takuji Nishimura (西村 拓士), supplendo a varie mancanze presenti negli altri algoritmi per generare numeri pseudocasuali oggi diffusi e usati (come il generatore LCG presente nel nucleo di base del C, la funzione "rand())". Ci sono almeno due varianti conosciute di questo algoritmo, che differiscono solo nel valore del numero primo di Mersenne usato. Il più nuovo ed usato è il Mersenne Twister MT 19937 che è usato per generare numeri casuali su Microsoft Excel. In matematica un numero primo di Mersenne è un numero primo inferiore di uno rispetto ad una potenza di due. I numeri primi di Mersenne sono esprimibili come:</p>
+       <p><img src="Mersenne_number_formula.png" alt="Formula del numero di Mersenne" style="width: 15%; height: auto; display: block; margin: 35px 0;"></p> <p><strong>L'MT 19937 ha i seguenti vantaggi:</strong></p>
+        <p>- È stato progettato per avere un periodo di 219937 − 1 (i creatori di questo algoritmo hanno dimostrato questa proprietà). Questo periodo spiega l'origine del nome: è un Numero primo di Mersenne e alcune delle costanti dell'algoritmo sono anch'esse numeri primi di Mersenne.<br>
+        - Permette di generare punti equidistribuiti in spazi fino a 623 dimensioni (molti altri generatori mostrano le loro mancanze utilizzando N valori consecutivi per selezionare un punto in uno spazio N-dimensionale).<br>
+        - È più veloce della maggior parte degli altri algoritmi, compresi quelli notevolmente inferiori in quanto a qualità.<br>
+        - Ha passato numerosi test statistici di casualità, tra cui il test Diehard.</p>
+        <div id="p5-sketch-mt-container" style="width: 100%; display: flex; justify-content: center; margin-top: 60px; margin-bottom: 30px;"></div>
+      </div>`,
+
+      `<div class="argument-content">
+        <h3><strong>5- Come una macchina calcola i numeri casuali</strong></h3>
+        <p>I computer non possono generare numeri veramente casuali da soli, perché sono macchine deterministiche: ogni operazione dà sempre lo stesso risultato. Perciò usano formule matematiche che simulano casualità. Il metodo più classico è questo:</p>
+        <p><strong>Formula del Generatore Lineare Congruenziale (LCG):</strong></p>
+        <p><img src="Screenshot 2025-05-20 alle 16.01.40.png" alt="Screenshot 2025-05-20 alle 16.01.40.png" style="width: 38%; height: auto; display: block; margin: 40px 0;filter: invert(1);"></p>
+        <p>Dove:</p>
+        <p>- X𝑛 è il numero pseudo-casuale corrente (o seme iniziale se 𝑛 = 0 𝑛 = 0)<br>
+        - X𝑛+1 è il numero pseudo-casuale successivo<br>
+        - 𝑎 è il moltiplicatore<br>
+        - 𝑐 è l'incremento (se diverso da zero, si parla di LCG affine)<br>
+        - m è il modulo <br>
+        - /mod è l'operazione modulo (resto della divisione)</p>
+        <p>Ma quindi è davvero casuale?<br>
+          No. È pseudo-casuale, cioè se conosci il seme, puoi ricostruire tutta la sequenza.</p>
+        <div id="p5-sketch-lcg-container" style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 30px; margin-bottom: 30px;">
+            <div class="slider-group">
+              <label>Moltiplicatore (a):</label>
+              <input type="range" id="a" min="1" max="20" value="5"> <span id="aval">5</span>
+            </div>
+            <div class="slider-group">
+              <label>Incremento (c):</label>
+              <input type="range" id="c" min="0" max="20" value="3"> <span id="cval">3</span>
+            </div>
+            <div class="slider-group">
+              <label>Modulo (m):</label>
+              <input type="range" id="m" min="10" max="100" value="31"> <span id="mval">31</span>
+            </div>
+            <div class="slider-group">
+              <label>Seed (X₀):</label>
+              <input type="range" id="x0" min="0" max="100" value="1"> <span id="x0val">1</span>
+            </div>
+            </div>
+      </div>`,
+
+      `<div class="argument-content">
+        <h3><strong>6- Crittografia</strong></h3>
+        <p>La crittografia è il processo di codifica e decodifica dei dati, rendendoli incomprensibili a chiunque non abbia la chiave per decifrarli. In sostanza, la crittografia permette di proteggere le informazioni trasformandole in un formato incomprensibile senza la chiave di decodifica.</p>
+        <p>-Scopo: L'obiettivo principale della crittografia è proteggere le informazioni sensibili da accessi non autorizzati, garantendo la riservatezza e l'integrità dei dati.<br>
+        -Applicazioni: La crittografia viene utilizzata in molti ambiti, tra cui la comunicazione online, la protezione dei dati aziendali, la sicurezza delle transazioni finanziarie e la protezione delle infrastrutture critiche.<br>
+        -Crittografia simmetrica e asimmetrica: Ci sono due principali tipi di crittografia: la crittografia simmetrica, che utilizza la stessa chiave per codificare e decodificare, e la crittografia asimmetrica, che utilizza due chiavi separate, una pubblica e una privata.</p>
+        <p><img src="flusso_crittografia_chiave_simmetrica.png" alt="flusso_crittografia_chiave_simmetrica.png" style="width: 60%; height: auto; display: block; margin: 35px 0;filter: invert(1);"></p> 
+        <p><img src="flusso_crittografia_chiave_asimmetrica.png" alt="flusso_crittografia_chiave_asimmetrica.png" style="width: 60%; height: auto; display: block; margin: 35px 0;filter: invert(1);"></p>
+        <h3><strong>Sicurezza</strong></h3>
+        <p>In applicazioni critiche, come la crittografia, è essenziale utilizzare generatori di numeri casuali che garantiscano un alto livello di entropia e imprevedibilità. L'utilizzo di PRNG non sicuri può portare a vulnerabilità e compromissioni dei dati. Pertanto, in questi casi, si preferisce l'uso di TRNG o PRNG crittograficamente sicuri. I PRNG crittograficamente sicuri, detti anche CSPRNG (Cryptographically Secure Pseudo-Random Number Generators) sono dei generatori pseudo-casuali progettati per resistere a ogni tentativo di predizione. Questo significa che anche se un attaccante conosce parte della sequenza generata, non può indovinare né il seme iniziale né i numeri futuri o passati.</p>
+        <p style="margin-bottom: 60px;"><strong>Requisiti fondamentali di un CSPRNG:</strong><br> -Imprevedibilità: Dado un numero generato, non si possono prevedere i successivi o i precedenti, anche conoscendo l’algoritmo.<br>
+        -Resistenza al backtracking: Se un attaccante riesce a catturare lo stato interno corrente, non deve poter ricostruire i numeri generati in precedenza.<br>
+        -Resistenza al forward-tracking: Se si conosce un output parziale, non si devono poter prevedere i numeri successivi.<br>
+        -Buona entropia iniziale: Il seme iniziale deve essere fornito da una fonte ad alta entropia (es. TRNG, input dell’utente, rumore di sistema...).</p>
+      </div>`,
+
+      `<div class="argument-content">
+        <h3><strong>7- Sitografia</strong></h3>
+       
+        <a href="http://www.mi.imati.cnr.it/~bruno/appuntiSILSIS/LezioneXI.pdf" target="_blank">http://www.mi.imati.cnr.it/~bruno/appuntiSILSIS/LezioneXI.pdf</a></li><br>
+        <a href="https://www.gameludere.it/2020/11/19/numeri-casuali-algoritmi-di-generazione-e-applicazioni/" target="_blank">https://www.gameludere.it/2020/11/19/numeri-casuali-algoritmi-di-generazione-e-applicazioni/</a></li><br>
+        <a href="http://www.di-srv.unisa.it/~ads/corso-security/www/CORSO-9900/randomness/storia.html" target="_blank">http://www.di-srv.unisa.it/~ads/corso-security/www/CORSO-9900/randomness/storia.html</a></li><rb>
+        <a href="https://it.eitca.org/sicurezza-informatica/eitc-%C3%A8-ccf-i-fondamenti-della-crittografia-classica/cifre-di-flusso/cifrari-a-flusso-numeri-casuali-e-un-time-pad/su-cosa-si-basa-l%27imprevedibilit%C3%A0-del-csprng/" target="_blank">https://it.eitca.org/sicurezza-informatica/eitc-%C3%A8-ccf-i-fondamenti-della-crittografia-classica/cifre-di-flusso/cifrari-a-flusso-numeri-casuali-e-un-time-pad/su-cosa-si-basa-l%27imprevedibilit%C3%A0-del-csprng/</a></li><br>
+        <a href="https://postils.wordpress.com/2016/11/10/generatore-lineare-congruenziale/" target="_blank">https://postils.wordpress.com/2016/11/10/generatore-lineare-congruenziale/</a></li><br>
+        <a href="https://www.sciencedirect.com/topics/computer-science/mersenne-twister" target="_blank">https://www.sciencedirect.com/topics/computer-science/mersenne-twister</a></li><br>
+        <a href="https://it.eitca.org/cybersecurity/eitc-is-ccf-classical-cryptography-fundamentals/stream-ciphers/stream-ciphers-random-numbers-and-the-one-time-pad/examination-review-stream-ciphers-random-numbers-and-the-one-time-pad/what-are-the-key-differences-between-true-random-number-generators-trngs-pseudorandom-number-generators-prngs-and-cryptographically-secure-pseudorandom-number-generators-csprngs/" target="_blank">https://it.eitca.org/cybersecurity/eitc-is-ccf-classical-cryptography-fundamentals/stream-ciphers/stream-ciphers-random-numbers-and-the-one-time-pad/examination-review-stream-ciphers-random-numbers-and-the-one-time-pad/what-are-the-key-differences-between-true-random-number-generators-trngs-pseudorandom-number-generators-prngs-and-cryptographically-secure-pseudorandom-number-generators-csprngs/</a></li><\p>
+        
+           <p style="font-size: 0.9vw;"><strong>Colophon</strong><br> Bertocchi Sara e Novello Matteo<br>
+          Professor Andreas Gysin<br>
+          Matematica per il design<br>
+          ISIA U, aa 2024-2025</p>
+         <p style="margin-bottom: 20px;"><img src="never random.jpg" alt="Wait, it's not really random. Math.random() Never has been." style="width: 100%; height: auto; display: block; margin-top: 30px;"></p>
+      </div>`
+    ];
+
+    function applyHighlight() {
+      sections.forEach((section, i) => {
+        const isHighlight = i === highlightIndex;
+        const h2 = section.querySelector('h2');
+        const color = colors[i % colors.length];
+        section.style.setProperty('--section-color', color);
+        section.style.setProperty('--section-color-active', color);
+
+        if (isHighlight) {
+          section.classList.add("active");
+          section.style.zIndex = 10;
+        } else {
+          section.classList.remove("active");
+          section.style.zIndex = 5;
+        }
+      });
+    }
+
+    // NUOVA FUNZIONE: Crea e gestisce lo sketch p5.js (primo sketch)
+    function createP5Sketch() {
+      // Se uno sketch esiste già, lo rimuoviamo per evitare sovrapposizioni e problemi
+      if (myP5Sketch) {
+        myP5Sketch.remove(); // Rimuove il canvas e gli event listener
+        myP5Sketch = null;    // Resetta la variabile
+      }
+
+      // Creazione dell'istanza p5.js
+      myP5Sketch = new p5(function(s) { // 's' è l'istanza dello sketch
+
+        // DICHIARAZIONE DELLE VARIABILI GLOBALI DELLO SKETCH (ora prefissate con 's.')
+        let squareSize = 8;
+        let numSquares = 2400;
+        let maxSquares = 10000;
+        let controlHeight = 50;
+        let sliderX, sliderY, sliderW;
+        let isDragging = false;
+        let currentMode = 'prng';
+
+        // FUNZIONE SETUP DELLO SKETCH
+        s.setup = function() {
+          const container = document.getElementById('p5-sketch-container');
+          if (container) {
+            // Usa le dimensioni del contenitore per la larghezza, altezza fissa o dinamica
+            s.createCanvas(container.offsetWidth * 0.8, 400 + controlHeight).parent(container);
+          }
+          s.noStroke();
+
+          sliderX = 50;
+          sliderY = s.height - controlHeight / 2;
+          sliderW = s.width - 100;
+
+          s.background(30); // Già impostato per lo sfondo scuro
+          generateCurrentMode();
+        };
+
+        // FUNZIONE DRAW DELLO SKETCH
+        s.draw = function() {
+          // Non c'è bisogno di background(30) qui perché generateCurrentMode lo farà
+          drawControlBar();
+        };
+
+        // ALTRE FUNZIONI EVENT-BASED DELLO SKETCH (prefissate con 's.')
+        s.keyPressed = function() {
+          if (s.key === '1') {
+            currentMode = 'prng';
+            s.background(30); // Pulisci lo sfondo quando cambi modalità
+            generateCurrentMode();
+          } else if (s.key === '2') {
+            currentMode = 'trng';
+            s.background(30); // Pulisci lo sfondo quando cambi modalità
+            generateCurrentMode();
+          }
+        };
+
+        s.mousePressed = function() {
+          if (s.dist(s.mouseX, sliderY, s.constrain(s.mouseX, sliderX, sliderX + sliderW), sliderY) < 10) {
+            isDragging = true;
+            updateSlider(s.mouseX);
+          }
+        };
+
+        s.mouseDragged = function() {
+          if (isDragging) {
+            updateSlider(s.mouseX);
+          }
+        };
+
+        s.mouseReleased = function() {
+          isDragging = false;
+        };
+
+        // FUNZIONI AUSILIARIE DELLO SKETCH
+        function updateSlider(x) {
+          let percent = s.constrain((x - sliderX) / sliderW, 0, 1);
+          numSquares = s.floor(100 + percent * (maxSquares - 100));
+          s.background(30); // AGGIUNGI QUESTA RIGA: Pulisci lo sfondo prima di ridisegnare i quadrati
+          generateCurrentMode();
+        }
+
+        function generateCurrentMode() {
+          // Lo sfondo viene già pulito da updateSlider() o keyPressed()
+          if (currentMode === 'prng') {
+            generateSymmetricPRNG();
+          } else {
+            generateTRNG();
+          }
+        }
+
+        // PRNG con forte simmetria e ripetizione, ma senza griglia
+        function generateSymmetricPRNG() {
+          s.randomSeed(s.millis()); // Rigenera il seme PRNG per una nuova sequenza
+
+          let squares = [];
+
+          for (let i = 0; i < numSquares / 2; i++) {
+            let x = s.random(s.width / 2);
+            let y = s.random(s.height - controlHeight);
+
+            let jitterX = s.random(-2, 2);
+            let jitterY = s.random(-2, 2);
+
+            squares.push({ x: x + jitterX, y: y + jitterY });
+            squares.push({ x: s.width - x + jitterX, y: y + jitterY });
+          }
+
+          s.shuffle(squares, true);
+
+          for (let i = 0; i < s.min(numSquares, squares.length); i++) {
+            let square = squares[i];
+            s.fill(255); // Colore bianco per i quadrati
+            s.rect(square.x, square.y, squareSize, squareSize);
+          }
+        }
+
+        // TRNG – completamente casuale con crypto
+        function generateTRNG() {
+          let randArray = new Uint32Array(numSquares * 2);
+          crypto.getRandomValues(randArray);
+
+          for (let i = 0; i < numSquares; i++) {
+            let x = randArray[i] % s.width;
+            let y = randArray[i + numSquares] % (s.height - controlHeight);
+            s.fill(255); // Colore bianco per i quadrati
+            s.rect(x, y, squareSize, squareSize);
+          }
+        }
+
+        // Slider e barra di controllo
+        function drawControlBar() {
+          s.fill(30); // Grigio scuro per la barra
+          s.rect(0, s.height - controlHeight, s.width, controlHeight);
+
+          s.stroke(80); // Grigio più scuro per la linea
+          s.strokeWeight(2);
+          s.line(sliderX, sliderY, sliderX + sliderW, sliderY);
+
+          s.noStroke();
+          let percent = (numSquares - 100) / (maxSquares - 100);
+          let handleX = sliderX + percent * sliderW;
+          s.fill(255); // Bianco per il cerchio del handle
+          s.circle(handleX, sliderY, 12);
+
+          s.fill(255); // Bianco per il testo
+          s.noStroke();
+          s.textAlign(s.CENTER, s.CENTER);
+          s.textSize(14);
+          s.text(`Quadratini: ${numSquares} | Modalità: ${currentMode.toUpperCase()}`, s.width / 2, s.height - controlHeight + 15);
+        }
+
+      }, 'p5-sketch-container');
+    }
+
+
+    // NUOVA FUNZIONE: Crea e gestisce lo sketch p5.js per Mersenne Twister
+    function createMersenneTwisterSketch() {
+      // Se uno sketch Mersenne Twister esiste già, lo rimuoviamo
+      if (myMersenneTwisterSketch) {
+        myMersenneTwisterSketch.remove();
+        myMersenneTwisterSketch = null;
+      }
+
+      myMersenneTwisterSketch = new p5(function(s) {
+
+        // === Inizio codice dello sketch Mersenne Twister ===
+        let mt;
+        let generatedNumbers = [];
+
+        s.setup = function() {
+          const container = document.getElementById('p5-sketch-mt-container');
+          if (container) {
+            // Regola le dimensioni del canvas qui, se necessario. Es: 800 di larghezza, 400 di altezza
+            s.createCanvas(container.offsetWidth, 400).parent(container);
+          }
+          mt = new MersenneTwister(5489); // seed iniziale
+          s.noStroke();
+          s.textSize(14);
+          s.textAlign(s.LEFT, s.TOP);
+          generateNumbers();
+        };
+
+        s.draw = function() {
+          s.background(30);
+
+          s.fill(255);
+          s.text("Premi il mouse per generare numeri con Mersenne Twister", 10, 10);
+
+          // Visualizza la lista di numeri generati
+          let listX = 10;
+          let listY = 40;
+          s.fill(200);
+          for (let i = 0; i < generatedNumbers.length; i++) {
+            s.text(s.nf(generatedNumbers[i], 1, 6), listX, listY + i * 20);
+          }
+
+          // Usa i numeri per disegnare cerchi sulla parte destra
+          for (let i = 0; i < generatedNumbers.length; i += 3) {
+            let x = s.map(generatedNumbers[i], 0, 1, s.width / 2, s.width);
+            let y = s.map(generatedNumbers[i + 1], 0, 1, 0, s.height);
+            let r = s.map(generatedNumbers[i + 2], 0, 1, 10, 60);
+            s.fill(100 + 150 * generatedNumbers[i], 200 * generatedNumbers[i + 1], 255 * generatedNumbers[i + 2], 180);
+            s.ellipse(x, y, r, r);
+          }
+
+          s.noLoop(); // Importante per non disegnare continuamente se non richiesto
+        };
+
+        s.mousePressed = function() {
+          generateNumbers();
+          s.loop(); // Riattiva il loop per disegnare
+        };
+
+        function generateNumbers() {
+          generatedNumbers = [];
+          for (let i = 0; i < 15; i++) {
+            generatedNumbers.push(mt.random());
+          }
+        }
+
+        // === Mersenne Twister JS Implementation (interna allo sketch p5.js) ===
+        // Fonte: https://gist.github.com/banksean/300494
+        function MersenneTwister(seed) {
+          if (seed == undefined) {
+            seed = new Date().getTime();
+          }
+          this.mt = new Array(624);
+          this.mti = 625;
+          this.init_genrand(seed);
+        }
+
+        MersenneTwister.prototype.init_genrand = function(s) {
+          this.mt[0] = s >>> 0;
+          for (this.mti = 1; this.mti < 624; this.mti++) {
+            let s = this.mt[this.mti - 1] ^ (this.mt[this.mti - 1] >>> 30);
+            this.mt[this.mti] = (((((s & 0xffff0000) >>> 16) * 1812433253) << 16) +
+              (s & 0x0000ffff) * 1812433253) + this.mti;
+            this.mt[this.mti] >>>= 0;
+          }
+        };
+
+        MersenneTwister.prototype.random = function() {
+          return this.genrand_int32() * (1.0 / 4294967296.0);
+        };
+
+        MersenneTwister.prototype.genrand_int32 = function() {
+          let y;
+          const mag01 = [0x0, 0x9908b0df];
+
+          if (this.mti >= 624) {
+            let kk;
+            for (kk = 0; kk < 227; kk++) {
+              y = (this.mt[kk] & 0x80000000) | (this.mt[kk + 1] & 0x7fffffff);
+              this.mt[kk] = this.mt[kk + 397] ^ (y >>> 1) ^ mag01[y & 0x1];
+            }
+            for (; kk < 623; kk++) {
+              y = (this.mt[kk] & 0x80000000) | (this.mt[kk + 1] & 0x7fffffff);
+              this.mt[kk] = this.mt[kk + (397 - 624)] ^ (y >>> 1) ^ mag01[y & 0x1];
+            }
+            y = (this.mt[623] & 0x80000000) | (this.mt[0] & 0x7fffffff);
+            this.mt[623] = this.mt[396] ^ (y >>> 1) ^ mag01[y & 0x1];
+            this.mti = 0;
+          }
+
+          y = this.mt[this.mti++];
+
+          y ^= (y >>> 11);
+          y ^= (y << 7) & 0x9d2c5680;
+          y ^= (y << 15) & 0xefc60000;
+          y ^= (y >>> 18);
+
+          return y >>> 0;
+        };
+        // === Fine codice dello sketch Mersenne Twister ===
+
+      }, 'p5-sketch-mt-container'); // Passa l'ID del contenitore HTML
+    }
+
+    // NUOVA FUNZIONE: Crea e gestisce lo sketch p5.js per la visualizzazione LCG
+    function createLCGP5Sketch() {
+      if (myLCGP5Sketch) {
+        myLCGP5Sketch.remove();
+        myLCGP5Sketch = null;
+      }
+
+      myLCGP5Sketch = new p5(function(s) {
+
+        // Variabili per i parametri LCG
+        let a, c, m, x0;
+        let sliderA, sliderC, sliderM, sliderX0;
+        let sequence = [];
+        let numSteps = 50; // Numero di passi da visualizzare
+
+        s.setup = function() {
+          const container = document.getElementById('p5-sketch-lcg-container');
+          if (container) {
+            s.createCanvas(container.offsetWidth, 450).parent(container); // Altezza maggiore per slider e grafico
+          }
+
+          // Per ora, useremo i getElementById come avevi nell'HTML originale:
+          sliderA = document.getElementById('a');
+          sliderC = document.getElementById('c');
+          sliderM = document.getElementById('m');
+          sliderX0 = document.getElementById('x0');
+
+          // Assicurati che gli slider esistano prima di attaccare i listener
+          if (sliderA && sliderC && sliderM && sliderX0) {
+            sliderA.oninput = updateLCGValues; // Usa oninput direttamente o s.changed() per slider p5.js
+            sliderC.oninput = updateLCGValues;
+            sliderM.oninput = updateLCGValues;
+            sliderX0.oninput = updateLCGValues;
+          } else {
+             console.error("Sliders LCG non trovati nel DOM. Assicurati che siano nella sezione HTML.");
+          }
+
+
+          updateLCGValues(); // Calcola la sequenza iniziale
+          s.noLoop(); // Disegniamo solo quando i valori cambiano
+        };
+
+        s.draw = function() {
+          s.background(30); // Sfondo bianco per il grafico
+
+          // Disegna il titolo del grafico
+          s.fill(255);
+          s.textSize(16);
+          s.textAlign(s.CENTER, s.TOP);
+          s.text('Evoluzione della Sequenza LCG', s.width / 2, 20);
+
+          // Disegna gli assi
+          let padding = 60;
+          let chartWidth = s.width - 2 * padding;
+          let chartHeight = s.height - 2 * padding - 80; // Meno spazio per i titoli e i controlli
+
+          s.stroke(200);
+          s.strokeWeight(1);
+          s.line(padding, padding + chartHeight, padding + chartWidth, padding + chartHeight); // Asse X
+          s.line(padding, padding, padding, padding + chartHeight); // Asse Y
+
+          // Etichette assi
+          s.textSize(12);
+          s.textAlign(s.CENTER, s.TOP);
+          s.text('Passi (n)', s.width / 2, s.height - padding - 30);
+          s.textAlign(s.CENTER, s.CENTER);
+          s.push(); // Salva lo stato di trasformazione
+          s.translate(padding / 2 - 10, padding + chartHeight / 2); // Sposta al centro dell'asse Y
+          s.rotate(-s.HALF_PI); // Ruota di 90 gradi
+          s.text('Xₙ', 0, 0);
+          s.pop(); // Ripristina lo stato di trasformazione
+
+          // Scala Y dinamica in base al modulo 'm'
+          let maxY = m - 1; // Il valore massimo è m-1
+          if (sequence.length > 0) {
+              maxY = Math.max(m - 1, ...sequence); // Assicurati che l'asse includa tutti i punti
+          }
+          let minY = 0;
+
+
+          // Disegna i punti e le linee
+          s.noFill();
+          s.stroke(120, 255, 255); // Colore del grafico (Chart.js color)
+          s.strokeWeight(2);
+          s.beginShape();
+          for (let i = 0; i < sequence.length; i++) {
+            let xPos = s.map(i, 0, numSteps - 1, padding, padding + chartWidth);
+            let yPos = s.map(sequence[i], minY, maxY, padding + chartHeight, padding); // Inverti Y per grafico
+            s.vertex(xPos, yPos);
+            s.fill(75, 192, 192);
+            s.noStroke();
+            s.ellipse(xPos, yPos, 6, 6); // Punto del grafico
+            s.noFill();
+            s.stroke(75, 192, 192);
+          }
+          s.endShape();
+
+          // Visualizza i valori degli slider
+          s.fill(255);
+          s.textSize(14);
+          s.textAlign(s.LEFT, s.TOP);
+          s.text(`Moltiplicatore (a): ${a}`, padding, s.height - padding - 20);
+          s.text(`Incremento (c): ${c}`, padding, s.height - padding + 0);
+          s.text(`Modulo (m): ${m}`, padding + 200, s.height - padding - 20);
+          s.text(`Seed (X₀): ${x0}`, padding + 200, s.height - padding + 0);
+
+        };
+
+        function updateLCGValues() {
+          a = parseInt(document.getElementById('a').value);
+          c = parseInt(document.getElementById('c').value);
+          m = parseInt(document.getElementById('m').value);
+          x0 = parseInt(document.getElementById('x0').value);
+
+          // Aggiorna i valori visualizzati accanto agli slider (non gestiti direttamente da p5.js)
+          document.getElementById('aval').textContent = a;
+          document.getElementById('cval').textContent = c;
+          document.getElementById('mval').textContent = m;
+          document.getElementById('x0val').textContent = x0;
+
+          // Calcola la sequenza LCG
+          sequence = [];
+          let currentX = x0;
+          for (let i = 0; i < numSteps; i++) {
+            sequence.push(currentX);
+            currentX = (a * currentX + c) % m;
+          }
+          s.redraw(); // Chiamata per ridisegnare il canvas
+        }
+
+      }, 'p5-sketch-lcg-container'); // Passa l'ID del contenitore HTML
+    }
+
+
+    function openTenda(index) {
+      // Rimuoviamo il contenuto precedente e lo reinseriamo per assicurarci che il div del canvas sia presente
+       // Inserisci solo il contenuto della sezione corrispondente all'indice
+       tenda.innerHTML = `<div class="close-btn" title="Chiudi tenda">×</div>` + contents[index];
+      tenda.classList.add("open");
+      isTendaOpen = true;
+      const newCloseBtn = tenda.querySelector(".close-btn");
+      if (newCloseBtn) {
+        newCloseBtn.addEventListener("click", hideTenda);
+      }
+
+      // NUOVA LOGICA: Avvia lo sketch p5.js solo per la sezione "ALGORITMI GENERATIVI"
+      // L'indice 2 corrisponde alla sezione "ALGORITMI GENERATIVI 3"
+      if (index === 1) { // Sketch per "PRNG E TRNG"
+        setTimeout(() => {
+          createP5Sketch();
+        }, 50);
+      } else if (index === 3) { // Sketch per "Mersenne Twister"
+        setTimeout(() => {
+          createMersenneTwisterSketch();
+        }, 50);
+      } else if (index === 4) { // NUOVO: Sketch P5.js LCG
+        setTimeout(() => {
+          createLCGP5Sketch(); // CHIAMA LA NUOVA FUNZIONE P5.JS QUI
+        }, 50);
+      }
+
+      // Scorri fino all'inizio del contenuto della sezione cliccata
+      const targetElement = tenda.children[index + 1]; // +1 perché il primo elemento è il bottone di chiusura
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    function hideTenda() {
+      tenda.classList.remove("open");
+      isTendaOpen = false;
+      highlightIndex = -1;
+      applyHighlight();
+      tenda.innerHTML = '<div class="close-btn" title="Chiudi tenda">×</div>';
+
+      // Rimuovi il primo sketch
+      if (myP5Sketch) {
+        myP5Sketch.remove();
+        myP5Sketch = null;
+      }
+      // Rimuovi il secondo sketch (Mersenne Twister)
+      if (myMersenneTwisterSketch) {
+        myMersenneTwisterSketch.remove();
+        myMersenneTwisterSketch = null;
+      }
+      // NUOVO: Rimuovi lo sketch p5.js LCG
+      if (myLCGP5Sketch) { 
+        myLCGP5Sketch.remove();
+        myLCGP5Sketch = null;
+      }
+    }
+function updateActiveSection() {
+  if (isTendaOpen && tendaContent) { // tendaContent non è definito
+    const scrollPosition = tenda.scrollTop;
+    const sectionTops = [];
+    const argumentContents = tenda.querySelectorAll('.argument-content');
+
+    argumentContents.forEach(content => {
+      sectionTops.push(content.offsetTop);
+    });
+
+    // Trova la sezione attiva in base alla posizione di scorrimento
+    let activeIndex = 0;
+    for (let i = 0; i < sectionTops.length; i++) {
+      if (scrollPosition >= sectionTops[i] - tenda.offsetTop - 50) { // Aggiunto un offset per l'attivazione anticipata
+        activeIndex = i;
+      } else {
+        break; // Le posizioni sono ordinate, quindi possiamo interrompere
+      }
+    }
+
+    // Aggiorna l'highlight delle sezioni nella barra laterale
+    highlightIndex = activeIndex;
+    applyHighlight();
+  }
+}
+    // Applica l'evidenziazione iniziale
+    applyHighlight();
+
+    sections.forEach((section, i) => {
+      section.addEventListener("click", () => {
+        if (isTendaOpen && i === highlightIndex) {
+          hideTenda();
+        } else {
+          highlightIndex = i;
+          applyHighlight();
+          openTenda(i);
+        }
+      });
+    });
+
+    // Animazione titolo (rimane invariata)
+    const titleText = "Base della Generazione dei Numeri Casuali"; // HO CAMBIATO QUI
+    const h1 = document.getElementById("animated-title");
+    let iteration = 0;
+    let interval;
+
+    function shuffleTitle() {
+      let displayed = "";
+      for (let i = 0; i < titleText.length; i++) {
+        if (i < iteration) {
+          displayed += titleText[i];
+        } else if (titleText[i] === " ") {
+          displayed += " ";
+        } else {
+          const randomChar = String.fromCharCode(33 + Math.floor(Math.random() * 94));
+          displayed += randomChar;
+        }
+      }
+      h1.textContent = displayed;
+
+      iteration += 1 / 3;
+
+      if (iteration >= titleText.length) {
+        clearInterval(interval);
+        h1.textContent = titleText;
+      }
+    }
+
+    interval = setInterval(shuffleTitle, 30);
+  </script>
+</body>
+</html>
