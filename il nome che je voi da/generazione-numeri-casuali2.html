@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>Calcolo delle Probabilità e Numeri Casuali</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
+  <style>
+    body {
+      font-family: 'Arial Black', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      color: #fff;
+      background-color: #1e1e1e;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    @font-face {
+      font-family: 'VCR Mono';
+      src: url('vcrmono.ttf') format('truetype');
+    }
+
+    h1#animated-title {
+      font-family: 'VCR Mono', monospace;
+      font-weight: normal;
+      font-size: 6vw; /* Dimensione del font ridotta */
+      margin: 0;
+      padding: 20px;
+      width: 50vw; /* Larghezza del riquadro ridotta */
+      line-height: 0.8; /* Interlinea leggermente aumentata per leggibilità con font più piccolo */
+      text-align: left;
+      white-space: normal;
+      word-break: keep-all;
+      pointer-events: none;
+      user-select: none;
+      background: transparent;
+      box-sizing: border-box;
+      color: #e6e6e6;
+      display: flex;
+      align-items: flex-start;
+    }
+    .sections-wrapper {
+      width: 60vw;
+      max-width: 60vw;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: flex-end;
+      gap: 15px;
+      pointer-events: auto;
+      box-sizing: border-box;
+      padding-left: 20px;
+      padding-right: 0;
+      padding-top: 20px;
+      height: 100vh;
+      user-select: none;
+    }
+
+    .section {
+      background: none;
+      padding: 10px 30px;
+      cursor: pointer;
+      box-sizing: border-box;
+      white-space: nowrap;
+      border: 2px solid transparent;
+      transition: all 0.5s ease;
+      user-select: none;
+      width: auto;
+    }
+
+    .section h2 {
+      margin: 0;
+      font-size: 1.2vw;
+      transition: font-size 0.3s ease;
+      font-family: 'VCR Mono', monospace; /* Modifica qui */
+      color: #fff;
+      user-select: none;
+    }
+
+    .section.active h2 {
+      font-size: 2.0vw;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .tenda {
+      position: fixed;
+      width: 65vw;
+      height: 100vh;
+      top: 0;
+      left: 0;
+      transform: translateX(-100%);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      z-index: 900;
+      border-radius: 0;
+      user-select: none;
+      background-color: #1e1e1e;
+      padding: 40px 30px 30px 30px;
+      overflow-y: auto;
+      font-family: Arial, sans-serif;
+      color: #fff;
+      font-size: 1.1vw;
+      line-height: 1.4;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    .tenda.open {
+      transform: translateX(0%);
+      opacity: 0.98;
+      pointer-events: auto;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 2.5vw;
+      color: #eee;
+      cursor: pointer;
+      user-select: none;
+      font-weight: bold;
+      transition: color 0.3s ease;
+      z-index: 1000;
+      line-height: 1;
+    }
+
+    .close-btn:hover {
+      color: #ffffff;
+    }
+
+    .argument-content {
+      color: #ddd;
+    }
+
+    .argument-content strong,
+    .argument-content h3 {
+      color: #fff;
+    }
+    
+    .argument-content a {
+      color: #fff; /* Rende il testo del link bianco */
+      text-decoration: none; /* Rimuove la sottolineatura predefinita */
+      transition: color 0.3s ease; /* Aggiunge una transizione per l'hover */
+      font-size: 0.9vw; /* Rendi i link leggermente più piccoli, ad esempio 1vw */
+      /* O potresti usare un valore relativo come: font-size: 0.9em; */
+    }
+
+
+    .argument-content a:hover {
+      color: #f92672; /* Colore al passaggio del mouse (hover), ad esempio il tuo colore di evidenziazione */
+      text-decoration: underline; /* Aggiunge la sottolineatura solo al passaggio del mouse */
+    }
+    
+  </style>
+</head>
+<body>
+  <h1 id="animated-title">Calcolo delle Probabilità<br>e Numeri Casuali</h1>
+
+  <div class="sections-wrapper">
+    <div class="section" data-index="0"><h2>INTRODUZIONE 1</h2></div>
+    <div class="section" data-index="1"><h2>PRNG E TRNG 2</h2></div>
+    <div class="section" data-index="2"><h2>ALGORITMI GENERATIVI 3</h2></div>
+    <div class="section" data-index="3"><h2>MARSENNE TWISTER 4</h2></div>
+    <div class="section" data-index="4"><h2>CASUALE O PSEUDO-CASUALE 5</h2></div>
+    <div class="section" data-index="5"><h2>CRITTOGRAFIA E SICUREZZA 6</h2></div>
+    <div class="section" data-index="6"><h2>SITOGRAFIA E COLOPHON 7</h2></div>
+  </div>
+
+   <div class="tenda">
+    <div class="close-btn" title="Chiudi tenda">×</div>
+  </div>
+
+  <script>
+    const sections = document.querySelectorAll(".section");
+    const tenda = document.querySelector(".tenda");
+    const closeBtn = document.querySelector(".close-btn");
+    let highlightIndex = -1;
+    let isTendaOpen = false;
+
+    const colors = [
+      '#61dafb', '#f92672', '#f8c555', '#c678dd',
+      '#98c379', '#e06c75', '#56b6c2', '#d19a66'
+    ];
+
+    const contents = [
+      `<div class="argument-content">
+        <h3><strong>1- Introduzione</strong></h3>
+        <p>Il calcolo delle probabilità è una branca fondamentale della matematica che studia eventi aleatori e le leggi che li governano. In informatica, questa disciplina riveste un ruolo cruciale per lo sviluppo di algoritmi probabilistici, simulazioni, sistemi crittografici e molto altro. Una delle applicazioni più importanti di questi concetti è la generazione di numeri casuali, indispensabile per modellare incertezza e comportamenti imprevedibili in ambienti digitali.</p>
+        <h3>Storia</h3>
+        <p>La storia della probabilità moderna inizia nel 1600 con una corrispondenza tra Blaise Pascal e Pierre de Fermat, che cercavano di risolvere il problema del gioco interrotto: da lì nacque la teoria matematica della probabilità. Durante il XIX secolo, la probabilità si consolidò come disciplina matematica autonoma, trovando applicazioni in fisica, biologia e finanza. Fin dalle origini del calcolo elettronico, è emersa la necessità di simulare casualità. Tuttavia, poiché i computer sono dispositivi deterministici (cioè producono sempre lo stesso output dato un certo input), si è dovuto sviluppare un approccio matematico per produrre sequenze che sembrano casuali. Nascono così i PRNG (Pseudo-Random Number Generators), seguiti dai TRNG (True Random Number Generators), basati su fenomeni fisici.</p>
+      </div>`,
+
+      `<div class="argument-content">
+        <h3><strong>2- Tipologie di generatori di numeri casuali.</strong></h3>
+        <p>Esistono due principali categorie di generatori di numeri casuali utilizzati in informatica:</p>
+        <p>- Generatori di Numeri Pseudo-Casuali (PRNG): Questi generatori utilizzano algoritmi deterministici per produrre sequenze di numeri che appaiono casuali. Sono ampiamente utilizzati per la loro velocità e riproducibilità. Tuttavia, poiché sono deterministici, non sono adatti per applicazioni crittografiche senza ulteriori misure di sicurezza.<br>
+        - Generatori di Numeri veramente Casuali (TRNG): Questi generatori si basano su fenomeni fisici imprevedibili, come il rumore termico o il decadimento radioattivo, per produrre numeri casuali. Sono utilizzati in applicazioni dove la sicurezza è critica, come nella generazione di chiavi crittografiche.
+      </div>`,
+
+      `<div class="argument-content">
+        <h3><strong>3- Algoritmi di generazione casuale</strong></h3>
+        <p>Diversi algoritmi sono stati sviluppati per generare numeri pseudo-casuali:
+        <p> - Algoritmo di Von Neumann:</strong> Uno dei primi metodi per generare numeri pseudo-casuali, basato sull'estrazione delle cifre centrali del quadrato di un numero.<br>
+         - Generatori Lineari Congruenziali (LCG):</strong> Utilizzano una formula ricorsiva per generare una sequenza di numeri. La scelta dei parametri è cruciale per garantire una buona distribuzione e un lungo periodo.<br>
+         - Algoritmi di Fibonacci:</strong> Basati sulla sequenza di Fibonacci, questi algoritmi combinano numeri precedenti della sequenza per generare nuovi valori.<br>
+         - Algoritmo di Marsaglia:</strong> Conosciuto anche come "Mersenne Twister", è uno dei PRNG più utilizzati per la sua lunga periodicità e buona distribuzione statistica.</p>
+         <div id="p5-sketch-container" style="width: 100%; display: flex; justify-content: center; margin-top: 30px;"></div>
+
+      </div>`,
+
+      `<div class="argument-content">
+        <h3><strong>4- Marsenne Twister</strong></h3>
+        <p>Mersenne Twister è un algoritmo per la generazione di numeri pseudocasuali sviluppato nel 1997 da Makoto Matsumoto (松本 眞) e Takuji Nishimura (西村 拓士), supplendo a varie mancanze presenti negli altri algoritmi per generare numeri pseudocasuali oggi diffusi e usati (come il generatore LCG presente nel nucleo di base del C, la funzione "rand())". Ci sono almeno due varianti conosciute di questo algoritmo, che differiscono solo nel valore del numero primo di Mersenne usato. Il più nuovo ed usato è il Mersenne Twister MT 19937 che è usato per generare numeri casuali su Microsoft Excel. In matematica un numero primo di Mersenne è un numero primo inferiore di uno rispetto ad una potenza di due. I numeri primi di Mersenne sono esprimibili come:</p>
+       <p><img src="Mersenne_number_formula.png" alt="Formula del numero di Mersenne" style="width: 15%; height: auto; display: block; margin: 35px 0;"></p> <p><strong>L'MT 19937 ha i seguenti vantaggi:</strong></p>
+        <p>- È stato progettato per avere un periodo di 219937 − 1 (i creatori di questo algoritmo hanno dimostrato questa proprietà). Questo periodo spiega l'origine del nome: è un Numero primo di Mersenne e alcune delle costanti dell'algoritmo sono anch'esse numeri primi di Mersenne.<br>
+        - Permette di generare punti equidistribuiti in spazi fino a 623 dimensioni (molti altri generatori mostrano le loro mancanze utilizzando N valori consecutivi per selezionare un punto in uno spazio N-dimensionale).<br>
+        - È più veloce della maggior parte degli altri algoritmi, compresi quelli notevolmente inferiori in quanto a qualità.<br>
+        - Ha passato numerosi test statistici di casualità, tra cui il test Diehard.</p>
+
+      </div>`,
+
+      `<div class="argument-content">
+        <h3><strong>5- Come una macchina calcola i numeri casuali</strong></h3>
+        <p>I computer non possono generare numeri veramente casuali da soli, perché sono macchine deterministiche: ogni operazione dà sempre lo stesso risultato. Perciò usano formule matematiche che simulano casualità. Il metodo più classico è questo:</p>
+        <p><strong>Formula del Generatore Lineare Congruenziale (LCG):</strong></p>
+        <p><img src="Screenshot 2025-05-20 alle 16.01.40.png" alt="Screenshot 2025-05-20 alle 16.01.40.png" style="width: 38%; height: auto; display: block; margin: 40px 0;filter: invert(1);"></p>
+        <p>Dove:</p>
+        <p>- X𝑛 è il numero pseudo-casuale corrente (o seme iniziale se 𝑛 = 0 𝑛 = 0)<br>
+        - X𝑛+1 è il numero pseudo-casuale successivo<br>
+        - 𝑎 è il moltiplicatore
+        - 𝑐 è l'incremento (se diverso da zero, si parla di LCG affine)<br>
+        - m è il modulo <br>
+        - /mod è l'operazione modulo (resto della divisione)</p>
+        <p>Ma quindi è davvero casuale?<br>
+          No. È pseudo-casuale, cioè se conosci il seme, puoi ricostruire tutta la sequenza. </p>
+        <div id="p5-sketch-container" style="width: 100%; display: flex; justify-content: center; margin-top: 30px;"></div>
+      </div>`,
+
+      `<div class="argument-content">
+        <h3><strong>6- Crittografia</strong></h3>
+        <p>La crittografia è il processo di codifica e decodifica dei dati, rendendoli incomprensibili a chiunque non abbia la chiave per decifrarli. In sostanza, la crittografia permette di proteggere le informazioni trasformandole in un formato incomprensibile senza la chiave di decodifica.</p>
+        <p>-Scopo: L'obiettivo principale della crittografia è proteggere le informazioni sensibili da accessi non autorizzati, garantendo la riservatezza e l'integrità dei dati.<br>
+        -Applicazioni: La crittografia viene utilizzata in molti ambiti, tra cui la comunicazione online, la protezione dei dati aziendali, la sicurezza delle transazioni finanziarie e la protezione delle infrastrutture critiche.<br>
+        -Crittografia simmetrica e asimmetrica: Ci sono due principali tipi di crittografia: la crittografia simmetrica, che utilizza la stessa chiave per codificare e decodificare, e la crittografia asimmetrica, che utilizza due chiavi separate, una pubblica e una privata.</p>
+        <p><img src="flusso_crittografia_chiave_simmetrica.png" alt="flusso_crittografia_chiave_simmetrica.png" style="width: 60%; height: auto; display: block; margin: 35px 0;filter: invert(1);"></p> 
+        <p><img src="flusso_crittografia_chiave_asimmetrica.png" alt="flusso_crittografia_chiave_asimmetrica.png" style="width: 60%; height: auto; display: block; margin: 35px 0;filter: invert(1);"></p>
+        <h3><strong>Sicurezza</strong></h3>
+        <p>In applicazioni critiche, come la crittografia, è essenziale utilizzare generatori di numeri casuali che garantiscano un alto livello di entropia e imprevedibilità. L'utilizzo di PRNG non sicuri può portare a vulnerabilità e compromissioni dei dati. Pertanto, in questi casi, si preferisce l'uso di TRNG o PRNG crittograficamente sicuri. I PRNG crittograficamente sicuri, detti anche CSPRNG (Cryptographically Secure Pseudo-Random Number Generators) sono dei generatori pseudo-casuali progettati per resistere a ogni tentativo di predizione. Questo significa che anche se un attaccante conosce parte della sequenza generata, non può indovinare né il seme iniziale né i numeri futuri o passati.</p>
+        <p style="margin-bottom: 60px;"><strong>Requisiti fondamentali di un CSPRNG:</strong><br> -Imprevedibilità: Dato un numero generato, non si possono prevedere i successivi o i precedenti, anche conoscendo l'algoritmo.<br>
+        -Resistenza al backtracking: Se un attaccante riesce a catturare lo stato interno corrente, non deve poter ricostruire i numeri generati in precedenza.<br>
+        -Resistenza al forward-tracking: Se si conosce un output parziale, non si devono poter prevedere i numeri successivi.<br>
+        -Buona entropia iniziale: Il seme iniziale deve essere fornito da una fonte ad alta entropia (es. TRNG, input dell'utente, rumore di sistema...).</p>
+      </div>`,
+
+      `<div class="argument-content">
+        <h3><strong>7- Sitografia</strong></h3>
+       
+        <a href="http://www.mi.imati.cnr.it/~bruno/appuntiSILSIS/LezioneXI.pdf" target="_blank">http://www.mi.imati.cnr.it/~bruno/appuntiSILSIS/LezioneXI.pdf</a></li><br>
+        <a href="https://www.gameludere.it/2020/11/19/numeri-casuali-algoritmi-di-generazione-e-applicazioni/" target="_blank">https://www.gameludere.it/2020/11/19/numeri-casuali-algoritmi-di-generazione-e-applicazioni/</a></li><br>
+        <a href="http://www.di-srv.unisa.it/~ads/corso-security/www/CORSO-9900/randomness/storia.html" target="_blank">http://www.di-srv.unisa.it/~ads/corso-security/www/CORSO-9900/randomness/storia.html</a></li><rb>
+        <a href="https://it.eitca.org/sicurezza-informatica/eitc-%C3%A8-ccf-i-fondamenti-della-crittografia-classica/cifre-di-flusso/cifrari-a-flusso-numeri-casuali-e-un-time-pad/su-cosa-si-basa-l%27imprevedibilit%C3%A0-del-csprng/" target="_blank">https://it.eitca.org/sicurezza-informatica/eitc-%C3%A8-ccf-i-fondamenti-della-crittografia-classica/cifre-di-flusso/cifrari-a-flusso-numeri-casuali-e-un-time-pad/su-cosa-si-basa-l%27imprevedibilit%C3%A0-del-csprng/</a></li><br>
+        <a href="https://postils.wordpress.com/2016/11/10/generatore-lineare-congruenziale/" target="_blank">https://postils.wordpress.com/2016/11/10/generatore-lineare-congruenziale/</a></li><br>
+        <a href="https://www.sciencedirect.com/topics/computer-science/mersenne-twister" target="_blank">https://www.sciencedirect.com/topics/computer-science/mersenne-twister</a></li><br>
+        <a href="https://it.eitca.org/cybersecurity/eitc-is-ccf-classical-cryptography-fundamentals/stream-ciphers/stream-ciphers-random-numbers-and-the-one-time-pad/examination-review-stream-ciphers-random-numbers-and-the-one-time-pad/what-are-the-key-differences-between-true-random-number-generators-trngs-pseudorandom-number-generators-prngs-and-cryptographically-secure-pseudorandom-number-generators-csprngs/" target="_blank">https://it.eitca.org/cybersecurity/eitc-is-ccf-classical-cryptography-fundamentals/stream-ciphers/stream-ciphers-random-numbers-and-the-one-time-pad/examination-review-stream-ciphers-random-numbers-and-the-one-time-pad/what-are-the-key-differences-between-true-random-number-generators-trngs-pseudorandom-number-generators-prngs-and-cryptographically-secure-pseudorandom-number-generators-csprngs/</a></li><\p>
+        
+           <p style="font-size: 0.9vw;"><strong>Colophon</strong><br> Bertocchi Sara e Novello Matteo<br>
+          Professor Andreas Gysin<br>
+          Matematica per il design<br>
+          ISIA U, aa 2024-2025</p>
+      </div>`
+    ];
+
+    function applyHighlight() {
+      sections.forEach((section, i) => {
+        const isHighlight = i === highlightIndex;
+        const h2 = section.querySelector('h2');
+        const color = colors[i % colors.length];
+        section.style.setProperty('--section-color', color);
+        section.style.setProperty('--section-color-active', color);
+
+        if (isHighlight) {
+          section.classList.add("active");
+          section.style.zIndex = 10;
+        } else {
+          section.classList.remove("active");
+          section.style.zIndex = 5;
+        }
+      });
+    }
+
+    function openTenda(index) {
+      tenda.innerHTML = `<div class="close-btn" title="Chiudi tenda">×</div>` + contents.join('');
+      tenda.classList.add("open");
+      isTendaOpen = true;
+      // Aggiungi l'event listener per chiudere la tenda (deve essere dopo aver inserito il bottone)
+      const newCloseBtn = tenda.querySelector(".close-btn");
+      if (newCloseBtn) {
+        newCloseBtn.addEventListener("click", hideTenda);
+      }
+
+      // Scorri fino all'inizio del contenuto della sezione cliccata
+      const targetElement = tenda.children[index + 1]; // +1 perché il primo elemento è il bottone di chiusura
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    function hideTenda() {
+      tenda.classList.remove("open");
+      isTendaOpen = false;
+      highlightIndex = -1;
+      applyHighlight();
+      tenda.innerHTML = '<div class="close-btn" title="Chiudi tenda">×</div>'; // Reimposta il contenuto con il solo bottone di chiusura
+    }
+function updateActiveSection() {
+  if (isTendaOpen && tendaContent) {
+    const scrollPosition = tenda.scrollTop;
+    const sectionTops = [];
+    const argumentContents = tenda.querySelectorAll('.argument-content');
+
+    argumentContents.forEach(content => {
+      sectionTops.push(content.offsetTop);
+    });
+
+    // Trova la sezione attiva in base alla posizione di scorrimento
+    let activeIndex = 0;
+    for (let i = 0; i < sectionTops.length; i++) {
+      if (scrollPosition >= sectionTops[i] - tenda.offsetTop - 50) { // Aggiunto un offset per l'attivazione anticipata
+        activeIndex = i;
+      } else {
+        break; // Le posizioni sono ordinate, quindi possiamo interrompere
+      }
+    }
+
+    // Aggiorna l'highlight delle sezioni nella barra laterale
+    highlightIndex = activeIndex;
+    applyHighlight();
+  }
+}
+    // Applica l'evidenziazione iniziale
+    applyHighlight();
+
+    sections.forEach((section, i) => {
+      section.addEventListener("click", () => {
+        if (isTendaOpen && i === highlightIndex) {
+          hideTenda();
+        } else {
+          highlightIndex = i;
+          applyHighlight();
+          openTenda(i);
+        }
+      });
+    });
+
+    // Animazione titolo (rimane invariata)
+    const titleText = "Calcolo delle Probabilità e Numeri Casuali";
+    const h1 = document.getElementById("animated-title");
+    let iteration = 0;
+    let interval;
+
+    function shuffleTitle() {
+      let displayed = "";
+      for (let i = 0; i < titleText.length; i++) {
+        if (i < iteration) {
+          displayed += titleText[i];
+        } else if (titleText[i] === " ") {
+          displayed += " ";
+        } else {
+          const randomChar = String.fromCharCode(33 + Math.floor(Math.random() * 94));
+          displayed += randomChar;
+        }
+      }
+      h1.textContent = displayed;
+
+      iteration += 1 / 3;
+
+      if (iteration >= titleText.length) {
+        clearInterval(interval);
+        h1.textContent = titleText;
+      }
+    }
+
+    interval = setInterval(shuffleTitle, 30);
+
+    // Add the p5.js sketch
+    function setup() {
+      const canvas = createCanvas(800, 600);
+      canvas.parent('p5-sketch-container');
+    }
+
+    function draw() {
+      if(mouseIsPressed) {
+        noStroke();
+        fill(255, 0, 0);
+        ellipse(mouseX, mouseY, 20, 20);
+        //simmetria
+        ellipse(width - mouseX, mouseY, 20, 20);
+      }
+    }
+  </script>
+</body>
+</html>

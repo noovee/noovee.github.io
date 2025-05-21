@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>LCG Interattivo</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial; padding: 20px; max-width: 900px; margin: auto; }
+    canvas { max-width: 100%; }
+    .slider-group { margin-bottom: 15px; }
+    label { display: inline-block; width: 100px; }
+    input[type=range] { width: 300px; }
+  </style>
+</head>
+<body>
+
+<h2>Visualizzazione Interattiva della Formula LCG</h2>
+
+<div class="slider-group">
+  <label>Moltiplicatore (a):</label>
+  <input type="range" id="a" min="1" max="20" value="5"> <span id="aval">5</span>
+</div>
+<div class="slider-group">
+  <label>Incremento (c):</label>
+  <input type="range" id="c" min="0" max="20" value="3"> <span id="cval">3</span>
+</div>
+<div class="slider-group">
+  <label>Modulo (m):</label>
+  <input type="range" id="m" min="10" max="100" value="31"> <span id="mval">31</span>
+</div>
+<div class="slider-group">
+  <label>Seed (X₀):</label>
+  <input type="range" id="x0" min="0" max="100" value="1"> <span id="x0val">1</span>
+</div>
+
+<canvas id="lcgChart"></canvas>
+
+<script>
+  const ctx = document.getElementById('lcgChart').getContext('2d');
+
+  const chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Sequenza LCG',
+        data: [],
+        borderColor: 'rgba(75, 192, 192, 1)',
+        fill: false,
+        pointRadius: 3,
+        tension: 0.1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        title: {
+          display: true,
+          text: 'Evoluzione della Sequenza LCG'
+        }
+      },
+      scales: {
+        x: { title: { display: true, text: 'Passi (n)' }},
+        y: { title: { display: true, text: 'Xₙ' }}
+      }
+    }
+  });
+
+  function updateChart() {
+    const a = parseInt(document.getElementById('a').value);
+    const c = parseInt(document.getElementById('c').value);
+    const m = parseInt(document.getElementById('m').value);
+    const x0 = parseInt(document.getElementById('x0').value);
+
+    document.getElementById('aval').textContent = a;
+    document.getElementById('cval').textContent = c;
+    document.getElementById('mval').textContent = m;
+    document.getElementById('x0val').textContent = x0;
+
+    let sequence = [];
+    let x = x0;
+    for (let i = 0; i < 50; i++) {
+      sequence.push(x);
+      x = (a * x + c) % m;
+    }
+
+    chart.data.labels = sequence.map((_, i) => i);
+    chart.data.datasets[0].data = sequence;
+    chart.update();
+  }
+
+  // Event listeners per sliders
+  document.querySelectorAll('input[type=range]').forEach(slider => {
+    slider.addEventListener('input', updateChart);
+  });
+
+  // Primo disegno
+  updateChart();
+</script>
+
+</body>
+</html>
